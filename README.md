@@ -1,6 +1,14 @@
-## **Hey Update Optimizer**
+# Hey Update Optimizer v1
 
-Hey Update Optimizer is a tool to improve the performance of game runtime. This tool adjusts the update frequency of components in the game and distributing the processing load.
+<p align="center">
+    <a href="https://u3d.as/30Rv" alt="Unity 2020.1+"><img src="https://img.shields.io/badge/Unity-2020.1%2B-blue.svg" /></a>
+    <a href="https://github.com/JahnStar/Hey-Update-Optimizer/blob/master/LICENSE" alt="License: CC BY 4.0"><img src="https://img.shields.io/badge/License-CC BY 4.0-brightgreen.svg" />
+    <a href="https://jahnstar.github.io/donate/" target="_blank" rel="noopener" noreferrer alt="Support the Developer">
+    <img src="https://img.shields.io/badge/Donate-☕-orange.svg"/></a></a>
+
+<p align="center">Hey Update Optimizer is a tool to improve the performance of game runtime. This tool adjusts the update frequency of components in the game and distributing the processing load.</p>
+
+<p align="center">The plugin is available on the <b>Unity Asset Store</b> for free: <a href="https://assetstore.unity.com/packages/slug/245930"><b>Click for add to your unity assets</b></a></p>
 
 ## **Features**
 
@@ -20,7 +28,7 @@ Hey Update Optimizer component is designed to be easy to use. Firstly, implement
 Example component script:
 
 ```csharp
-using UnityEngine
+using UnityEngine;
 using JahnStar.Optimization;
 public class Example : MonoBehaviour, IHeyUpdate
 {
