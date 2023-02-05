@@ -35,8 +35,8 @@ namespace JahnStar.Optimization
         [Header("Debug"), SerializeField] private float _absoluteTime;
         //
         private IHeyUpdate[] updatables;
-        private int _updatablesLength, _counterLimit = 3600, _processIndex = 0, _processCounter = 0, _frameCounter = 1;
-        private float _updatePoolingRatio, _delayedTime;
+        private int _updatablesLength, _counterLimit = 3600, _frameCounter = 0, _processIndex = 0, _processCounter = 0;
+        private float _updatePoolingRatio, _delayedTime, deltaTime;
         public void SetProcessPerFrame(int processPerFrame) => updatePoolingRatio = 1f - ((float)_updatablesLength / Mathf.Clamp(processPerFrame, 1, _updatablesLength));
         private void Awake() => Load();
         public void Load()
@@ -53,11 +53,18 @@ namespace JahnStar.Optimization
         }
         private void Update()
         {
-            _delayedTime = Time.time - _absoluteTime;
+            deltaTime = Time.time - _absoluteTime;
+            _absoluteTime = Time.time;
             if (_updatePoolingRatio != updatePoolingRatio)
             {
                 processPerFrame = updatePoolingRatio < 0.01f ? _updatablesLength : updatePoolingRatio > 0.99f ? 1 : (int)(_updatablesLength * (1f - updatePoolingRatio));
+                _delayedTime = (float)_updatablesLength / processPerFrame;
                 _updatePoolingRatio = updatePoolingRatio;
+            }
+            if (_processIndex >= _updatablesLength)
+            {
+                _processIndex = _processCounter = 0;
+                _frameCounter++;
             }
             if (_frameCounter >= _counterLimit)
             {
@@ -68,7 +75,7 @@ namespace JahnStar.Optimization
             {
                 IHeyUpdate updatable = updatables[_processIndex];
                 if (!applyForAll) updatePerFrame = updatable.UpdatePerFrame;
-                if (Updatable(updatePerFrame)) updatable.HeyUpdate(updatePerFrame * _delayedTime);
+                if (Updatable(updatePerFrame)) updatable.HeyUpdate(updatePerFrame * deltaTime * _delayedTime);
                 _processIndex++;
                 _processCounter++;
                 if (_processCounter >= processPerFrame)
@@ -76,12 +83,6 @@ namespace JahnStar.Optimization
                     _processCounter = 0;
                     break;
                 }
-            }
-            if (_processIndex >= _updatablesLength)
-            {
-                _processIndex = _processCounter = 0;
-                _frameCounter++;
-                _absoluteTime = Time.time;
             }
         }
         public bool Updatable(int updatePerFrame) => !(updatePerFrame > 1 && _frameCounter % updatePerFrame != 0);
