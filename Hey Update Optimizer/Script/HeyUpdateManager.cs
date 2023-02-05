@@ -26,33 +26,34 @@ namespace JahnStar.Optimization
         //
         [Header("Update Frequency")]
         [Tooltip("Allows modification of 'updatePerFrame' runtime ignoring 'UpdatePerFrame' in IHeyUpdate.")]
-        public bool applyForAll = false;
+        public bool ignoreAllInterfaces = false;
         [Tooltip("Determines how often the objects will be updated per frame. (Helps to optimize the update frequency)")]
-        public int updatePerFrame = 1;
+        public int updatePerFrame = 2;
         [Header("Pooling Ratio")]
-        [Tooltip("Allows modification 'processPerFrame' (Recommended to be used with 'applyForAll' enabled)"), Range(0, 1)]
-        public float updatePoolingRatio = 1;
+        [Tooltip("Allows modification 'processPerFrame'"), Range(0, 1)]
+        public float updatePoolingRatio = 0.5f;
         [Tooltip("Determines the maximum number of objects that will be updated per frame. (Helps to optimize the update load, affects the actual frame rate)")]
-        public int processPerFrame = 0;
+        private int processPerFrame = 0;
         //
         private IHeyUpdate[] updatables;
-        private int _updatablesLength, _counterLimit = 99999, _processIndex = 0, _processCounter = 0, _frameCounter = 1;
-        private float _updatePoolingRatio, _lastTime, _delayedTime;
+        private int[] updatePerFrameArray;
+        private int _updatablesLength, _processIndex = 0, _processCounter = 0, _frameCounter = 0, _counterLimit = 99999;
+        private float _updatePoolingRatio, _checkTime, _delayedTime;
         public void SetProcessPerFrame(int processPerFrame) => updatePoolingRatio = 1f - ((float)_updatablesLength / Mathf.Clamp(processPerFrame, 1, _updatablesLength));
         private void Awake() => Load();
-        private int[] updatePerFrameArray;
         public void Load()
         {
-            _processCounter = 0;
+            _frameCounter = _processCounter = 0;
             updatables = FindObjectsOfType<MonoBehaviour>().OfType<IHeyUpdate>().ToArray();
             _processIndex = _updatablesLength = updatables.Length;
             //
             updatePerFrameArray = new int[_updatablesLength];
             for (int i = 0; i < _updatablesLength; i++) updatePerFrameArray[i] = updatables[i].UpdatePerFrame;
-            _counterLimit = FindLCM(updatePerFrameArray);
+            _counterLimit = ignoreAllInterfaces ? updatePerFrame : FindLCM(updatePerFrameArray);
             //
             _updatePoolingRatio = -1;
         }
+        public static void ReLoad() => Instance.Load();
         private void Update()
         {
             if (_processIndex >= _updatablesLength)
@@ -61,21 +62,31 @@ namespace JahnStar.Optimization
                 _frameCounter++;
                 //
                 float time = Time.time;
-                _delayedTime = time - _lastTime;
-                _lastTime = time;
+                _delayedTime = time - _checkTime;
+                _checkTime = time;
                 //
-                if (_updatePoolingRatio != updatePoolingRatio)
+                if (_updatePoolingRatio != updatePoolingRatio) // Unnecessary cost: If you modify 'processPerFrame' this line can be removed.
                 {
                     processPerFrame = updatePoolingRatio < 0.01f ? _updatablesLength : updatePoolingRatio > 0.99f ? 1 : (int)(_updatablesLength * (1f - updatePoolingRatio));
                     _updatePoolingRatio = updatePoolingRatio;
                 }
-                if (_counterLimit < updatePerFrame) _counterLimit = applyForAll ? _counterLimit = updatePerFrame : FindLCM(updatePerFrameArray);
             }
-            if (_frameCounter >= _counterLimit) _frameCounter = 0;
+            if (_frameCounter >= (ignoreAllInterfaces ? updatePerFrame : _counterLimit)) _frameCounter = 0;
             while (_processIndex < _updatablesLength)
             {
-                IHeyUpdate updatable = updatables[_processIndex];
-                if (!applyForAll) updatePerFrame = updatable.UpdatePerFrame;
+                IHeyUpdate updatable;
+                try { updatable = updatables[_processIndex]; }
+                catch { Load(); return; }
+                if (!ignoreAllInterfaces)
+                {
+                    updatePerFrame = updatable.UpdatePerFrame;
+                    if (updatePerFrameArray[_processIndex] != updatePerFrame)
+                    {
+                        _counterLimit = ignoreAllInterfaces ? updatePerFrame : FindLCM(updatables.Select(u => u.UpdatePerFrame).ToArray());
+                        updatePerFrameArray[_processIndex] = updatePerFrame;
+                    }
+                } // Unnecessary cost: If you use the 'updatePerFrame' you don't need it anymore.
+                if (updatePerFrame < 2) updatePerFrame = 1; // Unnecessary cost: If you don't need this line, you can remove it.
                 if (Updatable(updatePerFrame)) updatable.HeyUpdate(updatePerFrame * _delayedTime);
                 _processIndex++;
                 _processCounter++;
