@@ -23,6 +23,8 @@ namespace JahnStar.Optimization
                 return _instance;
             }
         }
+
+        internal bool NeedApply() => _updatePoolingRatio != updatePoolingRatio || _updatePerFrame != updatePerFrame || _ignoreAllInterfaces != ignoreInterfaces;
         //
         public bool reload;
         [Header("Update Frequency")]
@@ -38,20 +40,27 @@ namespace JahnStar.Optimization
         //
         internal IHeyUpdate[] updatables;
         internal int _updatablesLength = 0;
-        private int[] _updatePerFrameArray;
-        private int _processIndex = 0, _processCounter = 0, _frameCounter = 0, _counterLimit = 99999;
+        [SerializeField] private int[] _updatePerFrameArray;
+        [SerializeField] private float[] _checkTimeArray;
+        [SerializeField] private int _processIndex = 0, _processCounter = 0, _frameCounter = 0, _counterLimit = 99999;
         private float _checkTime, _delayedTime;
         private bool _update;
-        internal bool _editorInfo;
+        public bool _editorInfo = true;
         public void SetProcessPerFrame(int processPerFrame) => _updatePoolingRatio = 1f - ((float)_updatablesLength / Mathf.Clamp(this.processPerFrame = processPerFrame, 1, _updatablesLength));
         private void OnEnable()
         {
+            reload = true;
             _delayedTime = 0;
-            _checkTime = Time.time;
+            _checkTimeArray = (new float[_updatablesLength]).Select(u => _checkTime = Time.time).ToArray();
         }
-        private void Awake() => Load();
-        internal void Load()
+        private void Awake()
         {
+            reload = true;
+            Load();
+        }
+        internal bool Load()
+        {
+            if (!reload) return false;
             _ignoreAllInterfaces = ignoreInterfaces;
             _updatePerFrame = updatePerFrame;
             _updatePoolingRatio = _ignoreAllInterfaces ? updatePoolingRatio : updatePoolingRatio = 0;
@@ -65,6 +74,8 @@ namespace JahnStar.Optimization
             _counterLimit = _ignoreAllInterfaces ? _updatePerFrame : FindLCM((int[])_updatePerFrameArray.Clone());
             _frameCounter = 0;
             reload = false;
+            _checkTimeArray = (new float[_updatablesLength]).Select(u => _checkTime = Time.time).ToArray();
+            return true;
         }
         public static void ReLoad() => Instance.reload = true;
         private void Update()
@@ -80,21 +91,18 @@ namespace JahnStar.Optimization
             {
                 try
                 {
-                    if (!_ignoreAllInterfaces) _update = Updatable(_updatePerFrameArray[_processIndex]);
-                    if (_processIndex == 0 && _update)
+                    if (!_ignoreAllInterfaces)
                     {
-                        if (reload)
-                        {
-                            Load();
-                            return;
-                        }
-                        else
-                        {
-                            float time = Time.time;
-                            _delayedTime = time - _checkTime;
-                            _checkTime = time;
-                        }
+                        _update = Updatable(_updatePerFrameArray[_processIndex]);
+                        if (_update) if (_processIndex == 0 && Load()) return;
+                        else UpdateTime(ref _checkTimeArray[_processIndex]);
                     }
+                    else if (_processIndex == 0 && _update)
+                    {
+                        if (Load()) return;
+                        else UpdateTime(ref _checkTime);
+                    }
+
                     if (_update) updatables[_processIndex].HeyUpdate(_delayedTime);
                 }
                 catch (Exception e) { reload = true; Debug.LogWarning(e.Message); return; }
@@ -106,6 +114,12 @@ namespace JahnStar.Optimization
                     break;
                 }
             }
+        }
+        public void UpdateTime(ref float checkTime)
+        {
+            float time = Time.time;
+            _delayedTime = time - checkTime;
+            checkTime = time;
         }
         public bool Updatable(int updatePerFrame) => _frameCounter % updatePerFrame == 0;
         public static int FindLCM(int[] element_array)

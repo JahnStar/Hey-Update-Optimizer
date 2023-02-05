@@ -29,6 +29,6 @@ public class RuntimeSpawner : MonoBehaviour
                 clones.Add(Instantiate(clock, new Vector3(clock.transform.position.x + distance * s, clock.transform.position.y, clock.transform.position.z + distance * i), clock.transform.rotation, base.transform));
         DestroyImmediate(clones[0]);
         clones.RemoveAt(0);
-        HeyUpdateManager.Instance.Load();
+        HeyUpdateManager.ReLoad();
     }
 }

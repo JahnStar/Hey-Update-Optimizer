@@ -43,6 +43,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ae8981070f2fc0479664e908be9d8ff, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  applyForAll: 1
+  reload: 0
+  ignoreInterfaces: 1
   updatePerFrame: 2
   updatePoolingRatio: 0.5
