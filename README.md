@@ -6,7 +6,9 @@
     <a href="https://jahnstar.github.io/donate/" target="_blank" rel="noopener" noreferrer alt="Support the Developer">
     <img src="https://img.shields.io/badge/Donate-☕-orange.svg"/></a></a>
 
-<p align="center">Hey Update Optimizer is a tool to improve the performance of game runtime. This tool adjusts the update frequency of components in the game and distributing the processing load.</p>
+<p align="center">Hey Update Optimizer is a tool to improve the performance of game runtime. This tool adjusts the update frequency of components in the game and distributing the processing load.
+<a alt="Developed by Halil Emre Yildiz" href=""><img src="https://github.com/JahnStar/Hey-Update-Optimizer/blob/master/hey_update_optimizer.png"><br><b></b></a>
+</p>
 
 <p align="center">The plugin is available on the <b>Unity Asset Store</b> for free: <a href="https://assetstore.unity.com/packages/slug/245930"><b>Click for add to your unity assets</b></a></p>
 
