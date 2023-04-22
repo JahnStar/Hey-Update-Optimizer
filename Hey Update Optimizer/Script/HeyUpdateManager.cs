@@ -7,7 +7,7 @@ using System.Linq;
 using UnityEngine;
 namespace JahnStar.Optimization
 {
-    [DisallowMultipleComponent, AddComponentMenu("Jahn Star/Hey Update Optimizer"), HelpURL("https://github.com/JahnStar/Hey-Update-Optimizer")]
+    [DisallowMultipleComponent, AddComponentMenu("JahnStar/Hey Update Optimizer"), HelpURL("https://github.com/JahnStar/Hey-Update-Optimizer")]
     public class HeyUpdateManager : MonoBehaviour
     {
         private static HeyUpdateManager _instance;
