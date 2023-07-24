@@ -1,4 +1,4 @@
-// </> Developed by Halil Emre Yildiz (All right reserved. 2023)
+// </> Developed by Halil Emre Yildiz (All right reserved. 2023) v1.1
 // Github: @JahnStar
 // https://jahnstar.github.io
 // Contributors: None yet
@@ -103,9 +103,20 @@ namespace JahnStar.Optimization
                         else UpdateTime(ref _checkTime);
                     }
 
-                    if (_update) updatables[_processIndex].HeyUpdate(_delayedTime);
+                    if (_update)
+                    {
+                        try { updatables[_processIndex].HeyUpdate(_delayedTime); }
+                        catch 
+                        {
+                            GameObject errorObject = (updatables[_processIndex] as MonoBehaviour).gameObject;
+                            #if UNITY_EDITOR
+                            UnityEditor.Selection.activeGameObject = errorObject;
+                            #endif
+                            throw new Exception($"Name: '{errorObject.name}' There is an error in your HeyUpdate() method.");
+                        }
+                    }
                 }
-                catch (Exception e) { reload = true; Debug.LogWarning(e.Message); return; }
+                catch (Exception e) { reload = true; Debug.LogError("Fatal Error: " + e.Message); return; }
                 _processIndex++;
                 _processCounter++;
                 if (_processCounter >= processPerFrame)

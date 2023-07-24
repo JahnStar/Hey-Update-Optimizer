@@ -97,6 +97,7 @@ public class HeyUpdateManager_Editor : Editor
                 "|   }\n", MessageType.Info);
         }
         serializedObject.ApplyModifiedProperties();
+        //DrawDefaultInspector(); // Debuging
     }
 }
 #endif
