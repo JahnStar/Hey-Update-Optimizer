@@ -38,7 +38,7 @@ public class Example : MonoBehaviour, IHeyUpdate
 	public int UpdatePerFrame { get => 1; }
 	public void HeyUpdate(float deltaTime)
 	{
-		if (!gameObject.activeInHierarchy) return;
+		if (!isActiveAndEnabled) return;
 		// Your update code here
 	}
 }
